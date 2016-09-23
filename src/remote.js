@@ -12,6 +12,7 @@ function doRequestServer(requestsData) {
 	return new Promise(function(resolve, reject) {
 		$.ajax({
 			url: this.__url,
+			headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
 			data: requestBody,
 			type: 'POST',
 			dataType: 'json',
