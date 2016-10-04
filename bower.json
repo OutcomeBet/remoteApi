@@ -1,20 +1,21 @@
 {
-    "name": "remote-api",
-    "description": "C2 Backoffice API",
-    "main": "dist/remote.js",
-    "authors": [
-        "Scukerman <nngoblin@gmail.com>"
-    ],
-    "license": "ISC",
-    "keywords": [
-        "api"
-    ],
-    "homepage": "https://github.com/OutcomeBet/remote-api",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ]
+	"name": "remote-api",
+	"version": "1.0.0",
+	"description": "C2 Backoffice API",
+	"main": "src/remote.js",
+	"authors": [
+		"Scukerman <nngoblin@gmail.com>"
+	],
+	"license": "ISC",
+	"keywords": [
+		"api"
+	],
+	"homepage": "https://github.com/OutcomeBet/remote-api",
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"test",
+		"tests"
+	]
 }
