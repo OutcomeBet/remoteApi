@@ -31,14 +31,18 @@ function doRequestServer(requestsData) {
 
 RemoteProxy.prototype = {
 	__addPendingRequest: function(method, args) {
-		var resolver = Promise.defer();
-		this.__pendingRequests.push({
-			method: method,
-			args: args.length === 1 ? args[0] : args,
-			resolver: resolver
-		});
-		this.__throttledRequest();
-		return resolver.promise;
+		return new Promise(function(resolve, reject) {
+			this.__pendingRequests.push({
+				method: method,
+				args: args.length === 1 ? args[0] : args,
+				resolver: {
+					promise: this,
+					resolve: resolve,
+					reject: reject
+				}
+			});
+			this.__throttledRequest();
+		}.bind(this));
 	},
 	__doBatchRequest: function() {
 		if(this.__pendingRequests.length === 0) return;
@@ -49,10 +53,18 @@ RemoteProxy.prototype = {
 		doRequestServer.call(this, requestsData).then(function(responsesData) {
 			_.each(responsesData, function(responseData, key) {
 				var request = requests[key];
-				if(responseData.success)
+				if(responseData.success) {
 					request.resolver.resolve(responseData.response);
-				else
+				} else {
 					request.resolver.reject(responseData.message || responseData);
+					var err;
+					if('exception' in responseData && 'message' in responseData.exception) {
+						err = new Error(responseData.exception.message);
+					} else {
+						err = new Error('Unknown error. See the Network log for details.');
+					}
+					request.resolver.reject(err);
+				}
 			});
 		}).catch(function(error) {
 			console.error(error);
@@ -62,11 +74,11 @@ RemoteProxy.prototype = {
 		var proxy = this;
 		var converted = {};
 		_.each(object, function(value, key, list) {
-			if(_.isArray(value))
+			if(_.isArray(value)) {
 				converted[key] = proxy.__convertObject(_.object(value, []), prefix + key + proxy.__methodSeparator);
-			else if(_.isObject(value))
+			} else if(_.isObject(value)) {
 				converted[key] = proxy.__convertObject(value, prefix + key + proxy.__methodSeparator);
-			else {
+			} else {
 				var method = prefix + key;
 				converted[key] = function() {
 					var promise = proxy.__addPendingRequest(method, arguments);
@@ -87,3 +99,15 @@ RemoteProxy.prototype = {
 		return this.__convertObject(methods, prefix || '')
 	}
 };
+
+function RemoteApiError(message) {
+	this.message = message;
+	var last_part = new Error().stack.match(/[^\s]+$/);
+	this.stack = this.name + ' at ' + last_part;
+}
+
+Object.setPrototypeOf(RemoteApiError, Error);
+RemoteApiError.prototype = Object.create(Error.prototype);
+RemoteApiError.prototype.name = 'RemoteApiError';
+RemoteApiError.prototype.message = '';
+RemoteApiError.prototype.constructor = RemoteApiError;
