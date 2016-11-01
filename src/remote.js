@@ -56,18 +56,21 @@ RemoteProxy.prototype = {
 				if(responseData.success) {
 					request.resolver.resolve(responseData.response);
 				} else {
-					request.resolver.reject(responseData.message || responseData);
 					var err;
 					if('exception' in responseData && 'message' in responseData.exception) {
-						err = new Error(responseData.exception.message);
+						err = new RemoteApiError(responseData.exception.message);
+
+						if('details' in responseData.exception) {
+							err.details = responseData.exception.details
+						}
 					} else {
-						err = new Error('Unknown error. See the Network log for details.');
+						err = new RemoteApiError('Unknown error. See the Network log for details.');
 					}
 					request.resolver.reject(err);
 				}
 			});
-		}).catch(function(error) {
-			console.error(error);
+		}).catch(function(err) {
+			console.error(err);
 		});
 	},
 	__convertObject: function(object, prefix) {
