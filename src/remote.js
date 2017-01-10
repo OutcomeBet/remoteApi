@@ -104,13 +104,25 @@ RemoteProxy.prototype = {
 };
 
 function RemoteApiError(message) {
-	this.message = message;
-	var last_part = new Error().stack.match(/[^\s]+$/);
-	this.stack = this.name + ' at ' + last_part;
+	var e;
+
+	// You don't need to call super, because it doesn't affect 'this'
+    this.name = 'RemoteApiError';
+    this.message = message;
+
+	if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, this.constructor);
+
+	} else if ((e = new Error(message)) && e.stack) {
+        this.stack = e.stack
+
+	} else {
+		// no stacktrace :(
+	}
 }
 
-Object.setPrototypeOf(RemoteApiError, Error);
+// extend static props
+Object.setPrototypeOf ? Object.setPrototypeOf(RemoteApiError, Error) : (RemoteApiError.__proto__ = Error);
+// extend instance props
 RemoteApiError.prototype = Object.create(Error.prototype);
-RemoteApiError.prototype.name = 'RemoteApiError';
-RemoteApiError.prototype.message = '';
 RemoteApiError.prototype.constructor = RemoteApiError;
