@@ -107,14 +107,14 @@ function RemoteApiError(message) {
 	var e;
 
 	// You don't need to call super, because it doesn't affect 'this'
-    this.name = 'RemoteApiError';
-    this.message = message;
+	this.name = 'RemoteApiError';
+	this.message = message;
 
 	if (Error.captureStackTrace) {
-        Error.captureStackTrace(this, this.constructor);
+		Error.captureStackTrace(this, this.constructor);
 
 	} else if ((e = new Error(message)) && e.stack) {
-        this.stack = e.stack
+		this.stack = e.stack
 
 	} else {
 		// no stacktrace :(
